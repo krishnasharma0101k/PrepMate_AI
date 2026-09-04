@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+import { color, motion } from "motion/react";
 import api from "../utils/axios";
-import { FiUploadCloud, FiUser } from "react-icons/fi";
+import { FiAlertCircle, FiTrendingUp, FiUploadCloud, FiUser, FiZap } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { setResume } from "../redux/resumeSlice";
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
@@ -34,6 +34,21 @@ const ScoreRing = ({score}) => {
 
       </div>
 
+    </div>
+  )
+}
+
+const Tag = ({text, color}) => {
+
+  const styles = {
+    purple: "bg-purple-50 text-purple-700 border-purple-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+    green: "bg-green-50 text-green-700 border-green-200",
+    yellow: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  }
+  return (
+    <div className={`text-[10px] px-1.5 py-1 rounded-md border font-medium ${styles [color]} `}>
+      {text}
     </div>
   )
 }
@@ -114,7 +129,7 @@ function Scorer({ user, setUser }) {
           onClick={()=> dispatch(setResume(null))}
           className="text-[10px] sm:text-xs text-black/50 hover:text-[#0A0A0A] border border-black/15 hover:border-black/35 px-2.5 py-1 rounded-lg transition-colors">Re-upload</button>
         </div>
-
+        {/* score ring  */}
         <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -138,14 +153,24 @@ function Scorer({ user, setUser }) {
         </div>
 
         </motion.div>
+      {/* weaknesses & Strengths  */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+
         <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.05 }}
-        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-4 sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4  sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] vai-transparent to-transparent pointer-events-none "/>
       
+      <div className="relative flex items-center gap-1.5 mb-2.5">
+        <FiAlertCircle className="text-green-400" size={14}/>
+        <span className="text-xs font-semibold text-white">Strengths</span>
+      </div>
+
+      <div className="relative flex flex-wrap gap-1.5">
+        {resume?.strengths?.map(s =>  <Tag key={s} text={s} color="green"/>)}
+      </div>
 
         </motion.div>
 
@@ -153,13 +178,61 @@ function Scorer({ user, setUser }) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.05 }}
-        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-4 sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4  sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] vai-transparent to-transparent pointer-events-none "/>
       
+      <div className="relative flex items-center gap-1.5 mb-2.5">
+        <FiAlertCircle className="text-yellow-400" size={14}/>
+        <span className="text-xs font-semibold text-white">Weaknesses</span>
+      </div>
+
+      <div className="relative flex flex-wrap gap-1.5">
+        {resume?.weaknesses?.map(s =>  <Tag key={s} text={s} color="yellow"/>)}
+      </div>
 
         </motion.div>
 
+
+
         </div>
+      {/* missing skills */}
+       <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.05 }}
+        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4  sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] vai-transparent to-transparent pointer-events-none "/>
+      
+      <div className="relative flex items-center gap-1.5 mb-2.5">
+        <FiZap className="text-red-400" size={14}/>
+        <span className="text-xs font-semibold text-white">Missing Skills</span>
+      </div>
+
+      <div className="relative flex flex-wrap gap-1.5">
+        {resume?.missingSkills?.map(s =>  <Tag key={s} text={s} color="red"/>)}
+      </div>
+
+        </motion.div>
+
+        {/* Recommendations */}
+        <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.05 }}
+        className="relative overflow-hidden bg-[#000000]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4  sm:flex-row shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] vai-transparent to-transparent pointer-events-none "/>
+      
+      <div className="relative flex items-center gap-1.5 mb-2.5">
+        <FiTrendingUp className="text-purple-400" size={14}/>
+        <span className="text-xs font-semibold text-white">Recommendations</span>
+      </div>
+
+      <div className="relative flex flex-wrap gap-1.5">
+        {resume?.recommendations?.map(s =>  <Tag key={s} text={s} color="purple"/>)}
+      </div>
+
+        </motion.div>
+
        </section>
 
       </div>
