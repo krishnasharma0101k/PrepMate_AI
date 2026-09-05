@@ -8,6 +8,7 @@ import { getCurrentUser } from "./api/user.api";
 import { getResume } from "./api/resume.api";
 import { useDispatch } from "react-redux";
 import { setResume } from "./redux/resumeSlice";
+import ResumeBuilder from "./pages/ResumeBuilder";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -62,6 +63,9 @@ function App() {
 
         <Route path="/scorer" element={
         user? <Scorer user={user}  setUser={setUser}/>: <Navigate to="/" replace/>} />
+       
+        <Route path="/resume" element={
+        user? <ResumeBuilder user={user}  setUser={setUser}/>: <Navigate to="/" replace/>} />
 
     </Routes>
   );
