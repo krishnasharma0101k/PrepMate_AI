@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import { motion } from "motion/react";
 import ResumeForm from '../components/resume/ResumeForm'
 import initialData from '../components/resume/initialData'
-import { FiArrowLeft, FiEye } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiEye } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { button } from 'motion/react-client';
 
 const STEPS = [
   { step: 1, title: "Personal Information", subtitle: "Your basic contact details" },
@@ -22,6 +23,17 @@ function ResumeBuilder({user, setUser}) {
     const navigate = useNavigate()
     const progressPct = ((currentStep) / (TOTAL_STEPS)) * 100 
     const activeStep = STEPS.find((s) => s.step === currentStep)
+    const goPrev = () =>{
+      if (currentStep > -1) {
+        setCurrentStep(currentStep -1)
+      }
+    }
+    const goNext = () =>{
+      if (currentStep < TOTAL_STEPS) {
+        setCurrentStep(currentStep + 1)
+      }
+    }
+    const isLastStep = currentStep === STEPS.length
 
   return (
     <div className='min-h-screen bg-white text-[#0A0A0A] flex flex-col'>
@@ -90,6 +102,7 @@ function ResumeBuilder({user, setUser}) {
 
         <div className='flex items-center justify-between'>
           <button
+          onClick={goPrev}
           disabled={currentStep === 1}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium border transition-all 
           ${currentStep === 1
@@ -101,6 +114,37 @@ function ResumeBuilder({user, setUser}) {
               Previous
             </span>
           </button>
+
+          <div className='flex items-center gap-1.5'>
+            {STEPS.map((s) => (
+              <button key={s.step}
+              onClick={() => setCurrentStep(s.step)}
+              className={`rounded-full transition-all ${s, step === currentStep
+                ?"w-4 h-1.5 bg-[#0A0A0A]"
+                : s.step < currentStep
+                ? "w-1.5 h-1.5 bg-black/35"
+                : "w-1.5 h-1.5 bg-black/12"
+              }`}/>
+            ))}
+          </div>
+
+          {isLastStep ? (
+            <button className='flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#0A0A0A]/90 backdrop-blur-2xl border border-white/10 text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:border-white/20 transition-all'>
+              <FiEye size={13}/>
+              <span className='hidden sm:block'>
+                Preview Resume
+              </span>
+            </button>
+          ): (
+          <button
+          onClick={goNext}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#000000]/90 text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:border-white/20 transition"
+          > 
+              <span className='hidden sm:block'>
+                Next
+              </span> <FiArrowRight size={15}/>
+          </button>
+          )}
         </div>
       </div>
     </div>
