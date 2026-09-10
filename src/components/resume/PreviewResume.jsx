@@ -1,8 +1,34 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FiArrowLeft } from 'react-icons/fi'
 import DownloadBtn from './DownloadBtn'
+import ATSTemplate from './ATSTemplate'
 
 function PreviewResume({ data, onBack, user, setUser }) {
+  const resumeRef = useRef(null)
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (window,innerWidth < 640) {
+        setScale(0.42)
+      } else if (window.innerWidth < 768) {
+        setScale(0.58)
+      } else if (window.innerWidth < 1024) {
+        setScale(0.72)
+      }else {
+        setScale(0.9)
+      }
+    }
+
+    updateScale()
+
+    window.addEventListener("resize", updateScale)
+
+    return () => 
+      window.removeEventListener("resize", updateScale)
+
+  }, [])
+
   return (
     <div className='min-h-screen bg-white text-[#0A0A0A]'>
       {/* header */}
@@ -23,10 +49,24 @@ function PreviewResume({ data, onBack, user, setUser }) {
             <FiArrowLeft size={15}/>
             <span className='hidden sm:block'>Back to Edit</span>
           </button>
-           <DownloadBtn/>
+           <DownloadBtn docRef={resumeRef} user={user} setUser={setUser}/>
         </div>
 
         </div>
+      </div>
+        {/* Template */}
+      <div className='overflow-auto bg-[#F8F9FA] px-3 py-4 sm:py-8'>
+        <div className='mx-auto flex justify-center'>
+          <div style={{
+            transform: `scale(${scale}),
+            transformOrigin: "top center"`
+          }}>
+            <div ref={resumeRef} className='rounded-md bg-white shadow-[0_0_50px_rgba(0,0,0,.6)]'>
+                <ATSTemplate data={data}/>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
