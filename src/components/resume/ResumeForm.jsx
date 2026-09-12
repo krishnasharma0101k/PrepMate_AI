@@ -52,8 +52,8 @@ function EntryCard({ children, onRemove }) {
     )
 }
 
-function ResumeForm({setp, data, setData}) {
-  if (setp === 1) {
+function ResumeForm({step, data, setData}) {
+  if (step === 1) {
     return(
         <div className='flex flex-col gap-3'>
            <Input
