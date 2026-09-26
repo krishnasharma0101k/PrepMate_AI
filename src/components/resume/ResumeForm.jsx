@@ -177,12 +177,12 @@ function ResumeForm({step, data, setData}) {
                         />
 
                         <Input label="Duration" placeholder="Jan 2023 - 2024"
-                        onChange={(v)=>updateExp(index, "duration", v)} 
+                        onChange={(v)=>updateExp(index, "duration", v)} value={exp.duration}
                         
                         />
 
                         <TextArea label="Description" placeholder="• Built REST APIs\n• Improved performance by 40%"
-                        onChange={(v)=>updateExp(index, "description", v)} 
+                        onChange={(v)=>updateExp(index, "description", v)} value={exp.description}
                         />
 
                     </EntryCard>

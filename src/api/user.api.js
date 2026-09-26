@@ -1,3 +1,4 @@
+import { data } from "react-router-dom";
 import api from "../utils/axios";
 
 export const getCurrentUser = async () => {
@@ -10,3 +11,14 @@ export const getCurrentUser = async () => {
     return null;
   }
 };
+
+export const useCoins = async (data) => {
+  try {
+    const response = await api.post("/api/auth/use-coins", data)
+
+    return response.data
+    
+  } catch (error) {
+    return null
+  }
+}

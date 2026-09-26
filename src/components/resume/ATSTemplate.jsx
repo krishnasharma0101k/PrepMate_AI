@@ -24,6 +24,24 @@ const skillsList = skills ? skills.split(",")
     const skillsCol1 = skillsList.slice(0,hlafList)
     const skillsCol2 = skillsList.slice(hlafList)
 
+      const renderDes = (text) => {
+        if (!text) return null 
+       
+        const lines = text.split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        return (
+            <ul className='mt-1 ml-4 list-disc p-0'>
+                {lines.map((line, i ) =>(
+                    <li key={i} className='mb-[1px] text-[11px] leading-[1.6] text-black'>
+                        {line.replace(/^[^-]*\s*/, "")}
+                    </li>
+                ))}
+            </ul>
+        )
+
+      }
+
   return (
     <div className='box-border w-[210mm] min-h-[297mm] bg-white px-[18mm] py-[15mm] text-black' style={{
         fontFamily: "'Times New Roman' Times, serif"
@@ -102,6 +120,73 @@ const skillsList = skills ? skills.split(",")
                             {exp.duration}
                         </span>
                     </div>
+
+                    <div className='mb-[2px] text-[11px] italic text-black'> 
+                        {exp.company}
+                    </div>
+                    {renderDes(exp.description)}
+                </div>
+            ))}
+            
+            </section>}
+
+            {projects.length > 0   && 
+            <section className='mb-[13px]'>
+            <h2 className='mt-0 mb-[9px] border-b-[1.5px] border-black pb-[3px] text-[10.5px] font-bold uppercase tracking-[0.14em] text-black'>
+                Projects
+            </h2>
+
+            {projects.map((proj, i) => (
+                <div key={i} className='mb-[11px] break-inside-avoid print:break-inside-avoid'>
+                    <div className='flex items-baseline justify-between'>
+                        <span className='text-[12px] font-bold text-black'>
+                            {proj.name}
+                        </span>
+                        {proj.github && <span className='ml-2 whitespace-nowrow text-[10.5px] text-black'>
+                            {proj.github}
+                        </span>}
+                    </div>
+
+                    {proj.techStack && <div className='mb-[2px] text-[11px] italic text-black'> 
+                      <span className='font-bold'>
+                        Tech Stack:
+                      </span>
+                    </div>}
+                    {renderDes(proj.description)}
+                </div>
+            ))}
+            
+            </section>}
+
+             {education.length > 0   && 
+            <section className='mb-[13px]'>
+            <h2 className='mt-0 mb-[9px] border-b-[1.5px] border-black pb-[3px] text-[10.5px] font-bold uppercase tracking-[0.14em] text-black'>
+                Education
+            </h2>
+
+            {education.map((edu, i) => (
+                <div key={i} className='mb-[11px] break-inside-avoid print:break-inside-avoid'>
+                    <div className='flex items-baseline justify-between'>
+                        <span className='text-[12px] font-bold text-black'>
+                            {edu.degree}
+                            {edu.branch ? `in ${edu.branch}` : ""}
+                        </span>
+                        <span className='ml-2 whitespace-nowrow text-[10.5px] text-black'>
+                            {edu.year}
+                        </span>
+                    </div>
+
+                     <div className='mb-[2px] text-[11px] italic text-black'> 
+                      {edu.collage}
+                      {edu.cgpa && (
+                        <span className='ml-[1px]'>
+                            | CGPA: <strong>
+                                {edu.cgpa}
+                            </strong>
+                        </span>
+                      )}
+                    </div>
+                    
                 </div>
             ))}
             
