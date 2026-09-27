@@ -6,6 +6,7 @@ import { FiAlertCircle, FiTrendingUp, FiUploadCloud, FiUser, FiZap } from "react
 import { useDispatch, useSelector } from "react-redux";
 import { setResume } from "../redux/resumeSlice";
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
+import { useCoins } from "../api/user.api";
 
 const ScoreRing = ({score}) => {
   const color = score >= 75 ? "#7c3aed" : score >= 50 ? "#f59e0b" : "#ef4444"
@@ -95,6 +96,12 @@ function Scorer({ user, setUser }) {
 
     try {
       setLoading(true);
+
+      const coinsResponse = await useCoins({coins: 10, action: "resume-scorer"})
+
+      setUser((prev) =>({
+        ...prev, interviewCoin: coinsResponse.interviewCoin
+      }))
 
       const formData = new FormData();
       formData.append("resume", file);

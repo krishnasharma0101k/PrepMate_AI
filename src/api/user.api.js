@@ -14,7 +14,7 @@ export const getCurrentUser = async () => {
 
 export const useCoins = async (data) => {
   try {
-    const response = await api.post("/api/auth/use-coins", data)
+    const response = await api.post("/api/auth/user-coins", data)
 
     return response.data
     

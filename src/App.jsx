@@ -17,35 +17,34 @@ function App() {
 
   useEffect(() => {
     const getUser = async () => {
-      try {
-        const data = await getCurrentUser();
-        setUser(data.user);
-      } catch (error) {
-        console.error("Failed to get current user:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    const response = await getCurrentUser();
+
+    if (response?.success) {
+      setUser(response.data);
+    } else {
+      setUser(null);
+    }
+  } catch (error) {
+    console.error("Failed to get current user:", error);
+    setUser(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
     getUser();
   }, []);
 
   useEffect(() => {
-  const getResumeData = async () => {
-    try {
-      const data = await getResume();
-
-      if (data) {
-        dispatch(setResume(data));
-      }
-    } catch (error) {
-      console.error("Failed to get resume:", error);
+  
+    const getResumeData = async () => {
+      const result = await getResume()
+      dispatch(setResume(result?.data))
     }
-  };
 
   getResumeData();
-}, [dispatch]);
+}, []);
 
   if (loading) {
     return <div className="fixed top-0 left-0 w-full z-[9999]">
