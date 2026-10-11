@@ -1,12 +1,61 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiBriefcase, FiCheck } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiBriefcase,
+  FiCheck,
+  FiCheckCircle,
+  FiFileText,
+  FiUploadCloud,
+} from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import api from "../../utils/axios";
+import { setResume } from "../../redux/resumeSlice";
+import { useCoins } from "../../api/user.api";
 
 function Step1setup({ user, setUser }) {
   const navigate = useNavigate();
-  const [role, setRole] = useState("")
-  const [type, setType] = useState("technical")
+  const dispatch = useDispatch()
+  const { resume } = useSelector((state) => state.resume);
+  const [role, setRole] = useState("");
+  const [type, setType] = useState("technical");
+  const [useResume, setUseResume] = useState(!!resume);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [starting, setStarting] = useState(false);
+   const uploadResume = async () => {
+      if (!file) {
+        alert("Please select a PDF");
+        return;
+      }
+  
+      try { 
+        setUploading(true);
+  
+        const coinsResponse = await useCoins({coins: 10, action: "resume-scorer"})
+  
+        setUser((prev) =>({
+          ...prev, interviewCoin: coinsResponse.interviewCoin
+        }))
+  
+        const formData = new FormData();
+        formData.append("resume", file);
+  
+        const response = await api.post("/api/resume/upload", formData);
+  
+        dispatch(setResume(response?.data?.data))
+  
+        setUploading(false)
+        setFile(null)
+  
+      } catch (error) {
+        console.error(error);
+        alert("Upload failed");
+      } finally {
+        setUploading(false);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -76,7 +125,6 @@ function Step1setup({ user, setUser }) {
           </div>
 
           <div className="mt-5 flex-1 space-y-4 overflow-y-auto">
-
             {/* role */}
             <div>
               <label className="text-xs font-medium text-zinc-400">
@@ -91,13 +139,141 @@ function Step1setup({ user, setUser }) {
 
                 <input
                   type="text"
-                  onChange={(e)=>setRole(e.target.value)}
+                  onChange={(e) => setRole(e.target.value)}
                   value={role}
                   placeholder=" Backend Developer"
                   className="w-full h-11 rounded-xl bg-[#17181E] border border-white/10 bg-white/5 pl-10  pr-4 text-sm text-white outline-none focus:border-white/30 transition"
                 />
               </div>
             </div>
+
+            {/* type */}
+
+            <div>
+              <label className="text-xs font-medium text-zinc-400">
+                Interview Type
+              </label>
+
+              <div className="mt-1.5 flex rounded-xl bg-[#17181E] p-1 border border-white/10">
+                {["technical", "hr"].map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setType(item)}
+                    className={`flex-1 h-9 rounded-lg text-xs sm:text-sm font-medium capitalize transition-all ${
+                      type === item
+                        ? "bg-white text-black"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* resume toggle*/}
+
+            <div className="rounded-xl border border-white/10 bg-[#17181E] p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-medium text-white">Use Resume</h2>
+                  <p className="mt-0.5 text-xs text-zinc-500">
+                    AI will personalize questions using your resume.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setUseResume(!useResume)}
+                  className={`relative shrink-0 w-12 h-7 rounded-full transition ${
+                    useResume ? "bg-white" : "bg-zinc-700"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5  h-6 w-6 rounded-full bg-black transition-all ${
+                      useResume ? "left-5.5" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {resume && useResume && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-xl border border-green-500/20 bg-green-500/5 p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 shrink-0 rounded-lg bg-green-500 flex items-center justify-center">
+                    <FiFileText size={15} className="text-white" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-white">
+                      Resume Ready <span className="text-gray-400">({resume?.suggestedRole})</span>
+                    </h4>
+                    <p className="text-xs text-zinc-400">
+                      Resume detected successfully.
+                    </p>
+                  </div>
+                  <FiCheckCircle
+                    size={18}
+                    className="text-green-400 shrink-0"
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {useResume && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-xl border-2 border-dashed border-white/10 bg-[#17181E] p-4"
+              >
+                <label className="cursor-pointer flex flex-col items-center">
+                  <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center">
+                    <FiUploadCloud size={20} className="text-black" />
+                  </div>
+
+                  <h3 className="mt-3 text-sm font-semibold text-white">
+                    Upload Resume
+                  </h3>
+
+                  <p className="mt-1 text-xs text-zinc-500 text-center">
+                    {resume
+                      ? "Resume detected. Upload a new resume anytime to update your interview questions."
+                      : "Upload your resume to generate personalied interview questions"}
+                  </p>
+
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      if (e.target.files[0]) setFile(e.target.files[0]);
+                    }}
+                  />
+                </label>
+
+                {file && (
+                  <div className="mt-4">
+                    <div className="rounded-lg bg-black/20 border border-white/10 p-2.5">
+                      <p className="text-xs text-zinc-300 truncate">
+                        {file.name}
+                      </p>
+                    </div>
+
+                    <button
+                    onClick={uploadResume}
+                      disabled={uploading}
+                      className="mt-3 w-full h-10 rounded-xl bg-white text-black text-sm font-semibold hover:opacity-90 transition disabled:opacity-60"
+                    >
+                      {uploading ? "Uploading..." : "Upload"}
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
         </div>
       </motion.div>

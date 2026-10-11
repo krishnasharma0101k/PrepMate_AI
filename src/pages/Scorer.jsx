@@ -94,7 +94,7 @@ function Scorer({ user, setUser }) {
       return;
     }
 
-    try {
+    try { 
       setLoading(true);
 
       const coinsResponse = await useCoins({coins: 10, action: "resume-scorer"})
