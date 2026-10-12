@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
+  FiArrowRight,
   FiBriefcase,
   FiCheck,
   FiCheckCircle,
@@ -13,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import api from "../../utils/axios";
 import { setResume } from "../../redux/resumeSlice";
 import { useCoins } from "../../api/user.api";
+import { startInterview } from "../../api/interview.api";
 
 function Step1setup({ user, setUser }) {
   const navigate = useNavigate();
@@ -56,6 +58,27 @@ function Step1setup({ user, setUser }) {
         setUploading(false);
       }
     };
+
+    const start = async () => {
+      setStarting(true)
+      const response = await startInterview({
+        role,
+        type,
+        useResume,
+        resume
+      }) 
+
+      if (response) {
+         const coinsResponse = await useCoins({coins: 10, action: "start-interview"})
+  
+        setUser((prev) =>({
+          ...prev, interviewCoin: coinsResponse.interviewCoin
+        }))
+      }
+
+      setStarting(false)
+      navigate(`/interview/${response.interviewId}`)
+    }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -275,6 +298,22 @@ function Step1setup({ user, setUser }) {
               </motion.div>
             )}
           </div>
+
+         
+            <motion.button
+                onClick={start}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={!role || starting || (useResume && !resume)}
+                className="mt-5 h-12 rounded-xl bg-white text-black text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition"
+            >
+                {starting ? "Starting Interview..." : (
+                    <>
+                        Start Interview <FiArrowRight size={15} />
+                    </>
+                )}
+            </motion.button>
+
         </div>
       </motion.div>
     </div>
