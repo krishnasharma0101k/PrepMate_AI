@@ -3,6 +3,8 @@ import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "motion/react";
 import { FiCamera, FiCameraOff, FiCode, FiMic, FiMicOff } from "react-icons/fi";
+import { video } from "motion/react-client";
+import CodeEditor from "./CodeEditor";
 
 function Step2interview({ interviewData, user }) {
   // --- State ---
@@ -70,8 +72,42 @@ function Step2interview({ interviewData, user }) {
     setMicOn(!micOn)
   }
 
+const toggleCamera = async () => {
+  if (cameraOn) {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null
+    setCameraOn(false)
+
+  } else {
+    try {
+      const stream = await navigation.mediaDevices.getUserMedia({video: true})
+      streamRef.current = stream
+      setCameraOn(true)
+      setTimeout(() => {
+        if(userVideoRef.current) userVideoRef.current.srcObject = stream
+      },100)
+    } catch (error) {
+      setCameraOn(false)
+    }
+  }
+}
+
+const handleSubmitCode = (code) => {
+    setAnswer((prev) => {
+        const separator = prev.trim()
+            ? "\n\n--- Code ---\n"
+            : "--- Code ---\n";
+
+        return prev + separator + code;
+    });
+    setCodeOpen(false)
+};
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
+
+      {codeOpen &&  <CodeEditor onClose={()=>setCodeOpen(false)} onSubmitCode={handleSubmitCode}/>}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -174,6 +210,7 @@ function Step2interview({ interviewData, user }) {
                   <motion.button
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.93 }}
+                    onClick={toggleCamera}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
                       cameraOn
                         ? "bg-white/10 border-white/15 text-white"
