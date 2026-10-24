@@ -19,6 +19,8 @@ function LoginModel({onClose, setUser}) {
 
     } catch (error) {
         console.log(error);
+        
+    console.log(error.response?.data);
     }
 }
 

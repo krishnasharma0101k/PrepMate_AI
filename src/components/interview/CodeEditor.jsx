@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { FiTerminal } from "react-icons/fi";
+import { FiTerminal, FiX } from "react-icons/fi";
+import { Editor } from "@monaco-editor/react";
 
-const LANG_OPTIONS = ["javascript", "python", "java", "cpp", ];
+const LANG_OPTIONS = ["javascript", "python", "java", "cpp"];
 const DEFAULT_CODE = {
   javascript: `// Write your solution here
 function solution() {
@@ -29,7 +30,7 @@ int main() {
 
 function CodeEditor({ onClose, onSubmitCode }) {
   const [lang, setLang] = useState("javascript");
-  const [code, setCode] = useState(DEFAULT_CODE["javascript"])
+  const [code, setCode] = useState(DEFAULT_CODE["javascript"]);
 
   return (
     <>
@@ -47,7 +48,7 @@ function CodeEditor({ onClose, onSubmitCode }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 20 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-x-3 top-4 bottom-4 sm:inset-x-6 sm:top-6 sm:bottom-6 md:inset-x-8 md:top-8 md:bottom-8 lg:inset-x-10 lg:top-10 overflow-hidden rounded-2xl bg-[#0E1016] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+          className="fixed inset-x-3 top-4 bottom-4 sm:inset-x-6 sm:top-6 sm:bottom-6 md:inset-x-10 md:top-8 md:bottom-8 z-50 flex flex-col overflow-hidden rounded-2xl bg-[#0E1016] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent pointer-events-none" />
 
@@ -63,9 +64,9 @@ function CodeEditor({ onClose, onSubmitCode }) {
               {LANG_OPTIONS.map((l) => (
                 <button
                   key={l}
-                  onClick={()=> {
-                    setLang(l)
-                    setCode(DEFAULT_CODE[l])
+                  onClick={() => {
+                    setLang(l);
+                    setCode(DEFAULT_CODE[l]);
                   }}
                   className={`text-xs px-2.5 py-1 rounded-lg capitalize transition-all ${
                     lang === l
@@ -78,7 +79,34 @@ function CodeEditor({ onClose, onSubmitCode }) {
               ))}
             </div>
 
-            <button></button>
+            <button
+              onClick={onClose}
+              className="text-white/35 hover:text-white transition-colors"
+            >
+              <FiX size={18} />
+            </button>
+          </div>
+
+          <div className="relative flex-1 min-h-0">
+            <Editor
+              height="100%"
+              language={lang}
+              value={code}
+              onChange={(v) => setCode(v || "")}
+              theme="vs-dark"
+              options={{
+                fontSize: 13,
+                minimap: { enabled: false },
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                padding: { top: 12 },
+                fontFamily: "'Fira Code', 'Cascadia Code', monospace",
+                fontLigatures: true,
+                renderLineHighlight: "line",
+                cursorBlinking: "smooth",
+              }}
+            />
           </div>
         </motion.div>
       </AnimatePresence>

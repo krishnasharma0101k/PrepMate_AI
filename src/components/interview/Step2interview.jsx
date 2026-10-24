@@ -37,76 +37,79 @@ function Step2interview({ interviewData, user }) {
   const streamRef = useRef(null);
 
   const videoSource = voiceGender === "female" ? femaleVideo : maleVideo;
-  const showMicOn = micOn && !isAIPlaying
+  const showMicOn = micOn && !isAIPlaying;
 
   // Speech recognition
 
-  useEffect(()=>{
-    if (!("webkitSpeechRecognition" in window)) return
-    const rec = new window.webkitSpeechRecognition()
-    rec.lang = "en-us"
-    rec.continuous = true
-    rec.interimResults = false
+  useEffect(() => {
+    if (!("webkitSpeechRecognition" in window)) return;
+    const rec = new window.webkitSpeechRecognition();
+    rec.lang = "en-us";
+    rec.continuous = true;
+    rec.interimResults = false;
     rec.onresult = (e) => {
-      const t = e.results[e.results.lenght - 1] [0].transcript
+      const t = e.results[e.results.length - 1][0].transcript;
 
-      setAnswer((prev) => prev + " " + t)
-    } 
+      setAnswer((prev) => prev + " " + t);
+    };
 
-    recognitionRef.current = rec
-  },[])
+    recognitionRef.current = rec;
+  }, []);
 
   const StartMic = () => {
-    recognitionRef.current?.start()
-  }
+    recognitionRef.current?.start();
+  };
   const StoptMic = () => {
-    recognitionRef.current?.stop()
-  }
+    recognitionRef.current?.stop();
+  };
 
   const toggleMic = () => {
     if (micOn) {
-      StoptMic()
-    }else{
-      StartMic()
+      StoptMic();
+    } else {
+      StartMic();
     }
-    setMicOn(!micOn)
-  }
+    setMicOn(!micOn);
+  };
 
-const toggleCamera = async () => {
-  if (cameraOn) {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null
-    setCameraOn(false)
-
-  } else {
-    try {
-      const stream = await navigation.mediaDevices.getUserMedia({video: true})
-      streamRef.current = stream
-      setCameraOn(true)
-      setTimeout(() => {
-        if(userVideoRef.current) userVideoRef.current.srcObject = stream
-      },100)
-    } catch (error) {
-      setCameraOn(false)
+  const toggleCamera = async () => {
+    if (cameraOn) {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      setCameraOn(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        streamRef.current = stream;
+        setCameraOn(true);
+        setTimeout(() => {
+          if (userVideoRef.current) userVideoRef.current.srcObject = stream;
+        }, 100);
+      } catch (error) {
+        setCameraOn(false);
+      }
     }
-  }
-}
+  };
 
-const handleSubmitCode = (code) => {
+  const handleSubmitCode = (code) => {
     setAnswer((prev) => {
-        const separator = prev.trim()
-            ? "\n\n--- Code ---\n"
-            : "--- Code ---\n";
+      const separator = prev.trim() ? "\n\n--- Code ---\n" : "--- Code ---\n";
 
-        return prev + separator + code;
+      return prev + separator + code;
     });
-    setCodeOpen(false)
-};
+    setCodeOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
-
-      {codeOpen &&  <CodeEditor onClose={()=>setCodeOpen(false)} onSubmitCode={handleSubmitCode}/>}
+      {codeOpen && (
+        <CodeEditor
+          onClose={() => setCodeOpen(false)}
+          onSubmitCode={handleSubmitCode}
+        />
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -150,98 +153,101 @@ const handleSubmitCode = (code) => {
           </div>
 
           <div className="min-h-[52px] flex items-center">
-              <AnimatePresence>
-                {subtitle && 
-                  <motion.div
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="w-full rounded-xl bg-white/5 border border-white/8 px-3 py-2"
-                  >
-                    <p className="text-xs text-white/65 leading-relaxed text-center">
-                      {subtitle}
-                    </p>
-                  </motion.div>}
-              </AnimatePresence>
-            </div>
+            <AnimatePresence>
+              {subtitle && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full rounded-xl bg-white/5 border border-white/8 px-3 py-2"
+                >
+                  <p className="text-xs text-white/65 leading-relaxed text-center">
+                    {subtitle}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-            <div className="relative rounded-xl overflow-hidden bg-[#17181E] border border-white/8 aspect-video flex items-center justify-center">
-              {cameraOn ? 
-                <>
-                  <video
-                    ref={userVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover scale-x-[-1]"
-                  />
+          <div className="relative rounded-xl overflow-hidden bg-[#17181E] border border-white/8 aspect-video flex items-center justify-center">
+            {cameraOn ? (
+              <>
+                <video
+                  ref={userVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover scale-x-[-1]"
+                />
                 <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
                   <span className="text-[10px] text-white/70">You</span>
                 </div>
-                </>
-                : 
-                <div className="flex flex-col items-center gap-2"> 
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
                 <div className="w-14 h-14 rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
                   <span className="text-2xl font-bold text-white">
-                    {user?.name.charAt(0).toUpperCase()}
+                    {user?.name?.charAt(0)?.toUpperCase() ?? "?"}
                   </span>
                 </div>
 
                 <span className="text-xs text-white/35">
-                  {user?.name.split(" ")[0]}
+                  {user?.name?.split(" ")[0]}
                 </span>
-                </div>}
-              </div>  
+              </div>
+            )}
+          </div>
 
-              <div className="flex flex-col items-center gap-1.5 pt-1">
-              <div className="flex items-center justify-center gap-3">
-                <motion.button
+          <div className="flex flex-col items-center gap-1.5 pt-1">
+            <div className="flex items-center justify-center gap-3">
+              <motion.button
                 onClick={toggleMic}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.93 }}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
-                    showMicOn
-                      ? "bg-white/10 border-white/15 text-white"
-                      : "bg-red-500/20 border-red-500/30 text-red-400"
-                  }`}>
-                    {showMicOn ? <FiMic size={15}/> :<FiMicOff size={15}/>}
-                </motion.button>
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
+                  showMicOn
+                    ? "bg-white/10 border-white/15 text-white"
+                    : "bg-red-500/20 border-red-500/30 text-red-400"
+                }`}
+              >
+                {showMicOn ? <FiMic size={15} /> : <FiMicOff size={15} />}
+              </motion.button>
 
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.93 }}
-                    onClick={toggleCamera}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
-                      cameraOn
-                        ? "bg-white/10 border-white/15 text-white"
-                        : "bg-white/5 border-white/10 text-white/70"
-                    }`}>
-                    {cameraOn ? 
-                      <FiCamera size={15} /> :   <FiCameraOff size={15} />}
-                  </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+                onClick={toggleCamera}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
+                  cameraOn
+                    ? "bg-white/10 border-white/15 text-white"
+                    : "bg-white/5 border-white/10 text-white/70"
+                }`}
+              >
+                {cameraOn ? <FiCamera size={15} /> : <FiCameraOff size={15} />}
+              </motion.button>
 
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => setCodeOpen(true)}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 border-white/10 text-white/45 hover:text-white hover:border-white/20 transition-all"
-                  >
-                    <FiCode size={15} />
-                  </motion.button>
-
-              </div>
-
-              <div className="min-h-[14px] flex items-center justify-center">
-                {micOn && isAIPlaying && (
-                  <span className="text-[10px] text-red-400/80">
-                    Mic paused — AI is speaking
-                  </span>)}
-              </div>
-              <span className="text-[10px] text-white/35 text-center">
-              Coding? Use <FiCode size={9} className="inline -mt-0.5" /> to write &amp; add code
-            </span>
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+                onClick={() => setCodeOpen(true)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 border-white/10 text-white/45 hover:text-white hover:border-white/20 transition-all"
+              >
+                <FiCode size={15} />
+              </motion.button>
             </div>
-          
+
+            <div className="min-h-[14px] flex items-center justify-center">
+              {micOn && isAIPlaying && (
+                <span className="text-[10px] text-red-400/80">
+                  Mic paused — AI is speaking
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-white/35 text-center">
+              Coding? Use <FiCode size={9} className="inline -mt-0.5" /> to
+              write &amp; add code
+            </span>
+          </div>
         </div>
       </motion.div>
     </div>

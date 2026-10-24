@@ -3,7 +3,7 @@ import { replace, useNavigate, useParams } from 'react-router-dom'
 import { getInterview } from '../api/interview.api'
 import Step2interview from "../components/interview/Step2interview"
 
-function InterviewPage(user, setUser) {
+function InterviewPage({user, setUser}) {
 const {id} = useParams()
 const [loading, setLoading] = useState(true)
 const [interview, setInterview] = useState(null)
