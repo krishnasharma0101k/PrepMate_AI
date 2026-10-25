@@ -108,6 +108,13 @@ function CodeEditor({ onClose, onSubmitCode }) {
               }}
             />
           </div>
+
+          <div className="relative border-t border-white/8 px-4 py-3 flex justify-end">
+            <button 
+            onClick={()=>onSubmitCode?.(code)}
+            className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg bg-white text-[#0A0A0A] font-semibold hover:bg-white/90 transition-all">Add To Answer</button>
+
+          </div>
         </motion.div>
       </AnimatePresence>
     </>

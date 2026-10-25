@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "motion/react";
-import { FiCamera, FiCameraOff, FiCode, FiMic, FiMicOff } from "react-icons/fi";
+import { FiCamera, FiCameraOff, FiClock, FiCode, FiMic, FiMicOff } from "react-icons/fi";
 import { video } from "motion/react-client";
 import CodeEditor from "./CodeEditor";
+import Timer from "./Timer";
 
 function Step2interview({ interviewData, user }) {
   // --- State ---
@@ -101,6 +102,12 @@ function Step2interview({ interviewData, user }) {
     });
     setCodeOpen(false);
   };
+
+  useEffect(() => {
+    if(timeLeft <= 0 || !timerActive) return
+    const t = setInterval(() => setTimeLeft((p) => p - 1), 1000)
+    return () => clearInterval(t)
+  },[timeLeft, timerActive])
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -247,6 +254,27 @@ function Step2interview({ interviewData, user }) {
               Coding? Use <FiCode size={9} className="inline -mt-0.5" /> to
               write &amp; add code
             </span>
+          </div>
+        </div>
+
+        {/* {right} */}
+
+        <div className="flex flex-col p-4 sm:p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-white">
+                AI Interview
+              </h2>
+              <div className="flex items-center gap-2 text-zinc-500 text-xs mt-0.5">
+                <FiClock size={11} />
+                <span>{question.difficulty}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-1.5 min-w-[110px]">
+              <Timer timeLeft={timeLeft} totalTime={question.timer || 60}/>
+
+            </div>
           </div>
         </div>
       </motion.div>
