@@ -2,7 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "motion/react";
-import { FiCamera, FiCameraOff, FiClock, FiCode, FiMic, FiMicOff } from "react-icons/fi";
+import {
+  FiCamera,
+  FiCameraOff,
+  FiClock,
+  FiCode,
+  FiMessageSquare,
+  FiMic,
+  FiMicOff,
+} from "react-icons/fi";
 import { video } from "motion/react-client";
 import CodeEditor from "./CodeEditor";
 import Timer from "./Timer";
@@ -38,6 +46,7 @@ function Step2interview({ interviewData, user }) {
   const streamRef = useRef(null);
 
   const videoSource = voiceGender === "female" ? femaleVideo : maleVideo;
+  const progress = ((currentIndex + 1)/(interviewData.totalQuestions))*100
   const showMicOn = micOn && !isAIPlaying;
 
   // Speech recognition
@@ -104,10 +113,10 @@ function Step2interview({ interviewData, user }) {
   };
 
   useEffect(() => {
-    if(timeLeft <= 0 || !timerActive) return
-    const t = setInterval(() => setTimeLeft((p) => p - 1), 1000)
-    return () => clearInterval(t)
-  },[timeLeft, timerActive])
+    if (timeLeft <= 0 || !timerActive) return;
+    const t = setInterval(() => setTimeLeft((p) => p - 1), 1000);
+    return () => clearInterval(t);
+  }, [timeLeft, timerActive]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -272,8 +281,38 @@ function Step2interview({ interviewData, user }) {
             </div>
 
             <div className="flex flex-col items-end gap-1.5 min-w-[110px]">
-              <Timer timeLeft={timeLeft} totalTime={question.timer || 60}/>
+              <Timer timeLeft={timeLeft} totalTime={question.timer || 60} />
+            </div>
+          </div>
 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative overflow-hidden rounded-xl bg-[#17181E] border border-white/8 p-4 sm:p-5 mb-4"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center shrink-0">
+                <FiMessageSquare size={14} />
+              </div>
+              <p className="text-xs text-zinc-500">
+                Question {currentIndex + 1}
+              </p>
+            </div>
+            <p className="relative text-white text-sm sm:text-base leading-7">
+              {question.question}
+            </p>
+          </motion.div>
+
+          <div className="mb-3">
+            <div className="flex justify-between text-[10px] text-white/35 mb-1">
+              <span>Progress</span>
+              <span>
+                {currentIndex + 1}/{interviewData.totalQuestions}
+              </span>
+            </div>
+            <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full bg-white rounded-full transition-all duration-500"/>
             </div>
           </div>
         </div>
