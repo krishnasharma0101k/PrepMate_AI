@@ -3,6 +3,7 @@ import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  FiArrowRight,
   FiCamera,
   FiCameraOff,
   FiClock,
@@ -46,7 +47,7 @@ function Step2interview({ interviewData, user }) {
   const streamRef = useRef(null);
 
   const videoSource = voiceGender === "female" ? femaleVideo : maleVideo;
-  const progress = ((currentIndex + 1)/(interviewData.totalQuestions))*100
+  const progress = ((currentIndex + 1) / interviewData.totalQuestions) * 100;
   const showMicOn = micOn && !isAIPlaying;
 
   // Speech recognition
@@ -117,6 +118,58 @@ function Step2interview({ interviewData, user }) {
     const t = setInterval(() => setTimeLeft((p) => p - 1), 1000);
     return () => clearInterval(t);
   }, [timeLeft, timerActive]);
+
+  useEffect(() => {
+    const load = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return;
+      const female = voices.find((v) => /zira|smanth|female/i.test(v.name));
+      const male = voices.find((v) => /david|mark|male/i.test(v.name));
+
+      if (female) {
+        setSelectedVoice(female);
+        setVoiceGender("female");
+      } else if (male) {
+        setSelectedVoice(male);
+        setVoiceGender("male");
+      } else {
+        setSelectedVoice(voices[0]);
+        setVoiceGender("female");
+      }
+    };
+
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+  }, []);
+
+  const speakText = (text) => {
+    return new Promise((resolve) => {
+      if (!window.speechSynthesis || !text?.trim()) {
+        resolve();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      setTimeout(() => {
+        const utter = new SpeechSynthesisUtterance(
+          text.replace(/,/g, ", ... ").replace(/\.(\s|$)/g, ". ... "),
+        );
+
+        utter.voice = selectedVoice
+        utter.rate = 0.92
+        utter.pitch = 1.05
+        utter.volume = 1
+
+        utter.onstart = () => {
+          setIsAIPlaying(true)
+          StoptMic()
+          aiVideoRef.current?.play()
+        }
+
+      }, 150);
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -312,7 +365,75 @@ function Step2interview({ interviewData, user }) {
               </span>
             </div>
             <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
-            <div className="h-full bg-white rounded-full transition-all duration-500"/>
+              <div
+                className="h-full bg-white rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0">
+              <label className="text-xs font-medium text-zinc-400 mb-1.5">
+                Your Answer
+              </label>
+              <textarea
+                onChange={(e) => setAnswer(e.target.value)}
+                value={answer}
+                rows={5}
+                onKeyDown={(e) => {
+                  if (e.ctrlKey && e.key === "Enter") alert("Submit Answer");
+                }}
+                placeholder="Write your answer here… or speak if mic is on"
+                className="flex-1 w-full rounded-xl bg-[#17181E] border border-white/8 p-4 text-sm text-white outline-none resize-none focus:border-white/25 transition placeholder-white/20"
+              />
+            </div>
+
+            <div className="mt-3 min-h-[0px]">
+              <AnimatePresence>
+                {feedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 max-h-40 overflow-y-auto"
+                  >
+                    <p className="text-xs uppercase tracking-widest text-green-400 mb-2">
+                      AI Feedback
+                    </p>
+                    <p className="text-sm text-zinc-300 leading-6">
+                      {feedback.feedback}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/8">
+              <span className="text-xs text-zinc-600 hidden sm:block">
+                Press{" "}
+                <span className="mx-1 rounded bg-white/10 px-1.5 py-0.5 text-white text-[10px]">
+                  Ctrl+Enter
+                </span>
+                to Submit
+              </span>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => alert("Submit Answer")}
+                disabled={loading || !answer.trim()}
+                className="ml-auto h-10 min-w-[150px] justify-center px-5 rounded-xl bg-white text-black text-sm font-semibold flex items-center gap-2 disabled:opacity-40 transition"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 rounded-full border-2 border-black border-t-transparent animate-spin" />
+                    Submitting…
+                  </>
+                ) : (
+                  <>
+                    Submit Answer <FiArrowRight size={15} />
+                  </>
+                )}
+              </motion.button>
             </div>
           </div>
         </div>
