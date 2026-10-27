@@ -15,6 +15,7 @@ import {
 import { video } from "motion/react-client";
 import CodeEditor from "./CodeEditor";
 import Timer from "./Timer";
+import { submitAnswer } from "../../api/interview.api";
 
 function Step2interview({ interviewData, user }) {
   // --- State ---
@@ -167,9 +168,78 @@ function Step2interview({ interviewData, user }) {
           aiVideoRef.current?.play()
         }
 
+        utter.onend = () => {
+          aiVideoRef.current?.pause()
+          setIsAIPlaying(false)
+          if(micOn) StartMic()
+
+            setTimeout(() => {setSubtitle(""); resolve()}, 300)
+        }
+        setSubtitle(text)
+        window.speechSynthesis.speak(utter)
+
       }, 150);
     });
   };
+
+  useEffect(() => {
+    if(!selectedVoice || introSpoken) return;
+    const runIntro = async () => {
+      setIntroSpoken (true)
+      await new Promise ((r) => setTimeout(r, 1200))
+      await speakText(`Welcome ${user?.Nmae.split(" ")[0]}! let's begin your interview`)
+      await new Promise ((r) => setTimeout(r,900))
+      await speakText(interviewData.question.question)
+    }
+    runIntro()
+  },[selectedVoice])
+
+  useEffect(() =>{
+    if(!selectedVoice || !introSpoken) return
+    const speakQuestion = async () => {
+      await new Promise ((r) => setTimeout(r,900))
+      await speakText(interviewData.question.question)
+    }
+    speakQuestion()
+  },[question])
+
+  useEffect(() => {
+  setQuestion(interviewData.question);
+  setCurrentIndex(interviewData.currentQuestion);
+  setTimeLeft(interviewData.question.timer || 60);
+}, [interviewData]);
+
+useEffect(() => {
+  setTimeLeft(question.timer || 60)
+  setTimerActive(true)
+},[question])
+
+
+const submit = async ()=> {
+  if(!answer.trim()) return;
+
+  setTimerActive(false)
+  setLoading(true)
+
+  const res = await submitAnswer({ interviewId: interviewData.interviewId, answer})
+
+  if (res.completed) {
+  setFeedback(res.feedback);
+
+  await new Promise((r) => setTimeout(r, 700));
+
+  await speakText(
+    res.feedback?.feedback ||
+      "Great job! Your interview is complete. Preparing your report now."
+  );
+
+  setLoading(false);
+
+  navigate(`/interview/${interviewData.interviewId}/report`);
+
+  return;
+}
+}
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
