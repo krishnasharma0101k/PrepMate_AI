@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "motion/react";
@@ -19,6 +20,7 @@ import { submitAnswer } from "../../api/interview.api";
 
 function Step2interview({ interviewData, user }) {
   // --- State ---
+  const navigate = useNavigate();
   const [question, setQuestion] = useState(interviewData.question);
   const [currentIndex, setCurrentIndex] = useState(
     interviewData.currentQuestion || 0,
@@ -143,8 +145,8 @@ function Step2interview({ interviewData, user }) {
     window.speechSynthesis.onvoiceschanged = load;
   }, []);
 
-  const speakText = (text) => {
-    return new Promise((resolve) => {
+  const speakText = (text) =>
+    new Promise((resolve) => {
       if (!window.speechSynthesis || !text?.trim()) {
         resolve();
         return;
@@ -157,89 +159,120 @@ function Step2interview({ interviewData, user }) {
           text.replace(/,/g, ", ... ").replace(/\.(\s|$)/g, ". ... "),
         );
 
-        utter.voice = selectedVoice
-        utter.rate = 0.92
-        utter.pitch = 1.05
-        utter.volume = 1
+        utter.voice = selectedVoice;
+        utter.rate = 0.92;
+        utter.pitch = 1.05;
+        utter.volume = 1;
 
         utter.onstart = () => {
-          setIsAIPlaying(true)
-          StoptMic()
-          aiVideoRef.current?.play()
-        }
+          setIsAIPlaying(true);
+          StoptMic();
+          aiVideoRef.current?.play();
+        };
 
         utter.onend = () => {
-          aiVideoRef.current?.pause()
-          setIsAIPlaying(false)
-          if(micOn) StartMic()
+          aiVideoRef.current?.pause();
+          setIsAIPlaying(false);
+          if (micOn) StartMic();
 
-            setTimeout(() => {setSubtitle(""); resolve()}, 300)
-        }
-        setSubtitle(text)
-        window.speechSynthesis.speak(utter)
-
+          setTimeout(() => {
+            setSubtitle("");
+            resolve();
+          }, 300);
+        };
+        setSubtitle(text);
+        window.speechSynthesis.speak(utter);
       }, 150);
     });
-  };
 
   useEffect(() => {
-    if(!selectedVoice || introSpoken) return;
+    if (!selectedVoice || introSpoken) return;
+
     const runIntro = async () => {
-      setIntroSpoken (true)
-      await new Promise ((r) => setTimeout(r, 1200))
-      await speakText(`Welcome ${user?.Nmae.split(" ")[0]}! let's begin your interview`)
-      await new Promise ((r) => setTimeout(r,900))
-      await speakText(interviewData.question.question)
-    }
-    runIntro()
-  },[selectedVoice])
+      setIntroSpoken(true);
 
-  useEffect(() =>{
-    if(!selectedVoice || !introSpoken) return
-    const speakQuestion = async () => {
-      await new Promise ((r) => setTimeout(r,900))
-      await speakText(interviewData.question.question)
-    }
-    speakQuestion()
-  },[question])
+      await new Promise((r) => setTimeout(r, 1200));
+
+      const fullName =
+        user?.name ||
+        user?.displayName ||
+        user?.firstName ||
+        user?.email?.split("@")[0] ||
+        "Candidate";
+
+      const firstName = String(fullName).trim().split(/\s+/)[0];
+
+      await speakText(`Welcome ${firstName}! Let's begin your interview`);
+
+      await new Promise((r) => setTimeout(r, 900));
+
+      await speakText(interviewData.question.question);
+    };
+
+    runIntro().catch(console.error);
+  }, [selectedVoice, introSpoken, user, interviewData.question.question]);
 
   useEffect(() => {
-  setQuestion(interviewData.question);
-  setCurrentIndex(interviewData.currentQuestion);
-  setTimeLeft(interviewData.question.timer || 60);
-}, [interviewData]);
+    if (!selectedVoice || !introSpoken) return;
+    const speakQuestion = async () => {
+      await new Promise((r) => setTimeout(r, 900));
+      await speakText(interviewData.question.question);
+    };
+    speakQuestion();
+  }, [question]);
 
-useEffect(() => {
-  setTimeLeft(question.timer || 60)
-  setTimerActive(true)
-},[question])
+  useEffect(() => {
+    setQuestion(interviewData.question);
+    setCurrentIndex(interviewData.currentQuestion);
+    setTimeLeft(interviewData.question.timer || 60);
+  }, [interviewData]);
 
+  useEffect(() => {
+    setTimeLeft(question.timer || 60);
+    setTimerActive(true);
+  }, [question]);
 
-const submit = async ()=> {
-  if(!answer.trim()) return;
+  const submit = async () => {
+    if (!answer.trim()) return;
 
-  setTimerActive(false)
-  setLoading(true)
+    setTimerActive(false);
+    setLoading(true);
 
-  const res = await submitAnswer({ interviewId: interviewData.interviewId, answer})
+    const res = await submitAnswer({
+      interviewId: interviewData.interviewId,
+      answer,
+    });
 
-  if (res.completed) {
-  setFeedback(res.feedback);
+    if (res.completed) {
+      setFeedback(res.feedback);
 
-  await new Promise((r) => setTimeout(r, 700));
+      await new Promise((r) => setTimeout(r, 700));
 
-  await speakText(
-    res.feedback?.feedback ||
-      "Great job! Your interview is complete. Preparing your report now."
-  );
+      await speakText(
+        res.feedback?.feedback ||
+          "Great job! Your interview is complete. Preparing your report now.",
+      );
 
-  setLoading(false);
+      setLoading(false);
 
-  navigate(`/interview/${interviewData.interviewId}/report`);
+      navigate(`/interview/${interviewData.interviewId}/report`);
 
-  return;
-}
-}
+      return;
+    }
+
+    setFeedback(res.feedback);
+    await new Promise((r) => setTimeout(r, 700));
+    await speakText(
+      res.feedback?.feedback ||
+        "Noted your anwser. Let's move to the next question.",
+    );
+
+    setLoading(false);
+    setQuestion(res.question);
+    setCurrentIndex(res.currentQuestion);
+    setAnswer("");
+    setFeedback(null);
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3 sm:p-5">
@@ -450,7 +483,7 @@ const submit = async ()=> {
                 value={answer}
                 rows={5}
                 onKeyDown={(e) => {
-                  if (e.ctrlKey && e.key === "Enter") alert("Submit Answer");
+                  if (e.ctrlKey && e.key === "Enter") submit();
                 }}
                 placeholder="Write your answer here… or speak if mic is on"
                 className="flex-1 w-full rounded-xl bg-[#17181E] border border-white/8 p-4 text-sm text-white outline-none resize-none focus:border-white/25 transition placeholder-white/20"
@@ -489,7 +522,7 @@ const submit = async ()=> {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => alert("Submit Answer")}
+                onClick={submit}
                 disabled={loading || !answer.trim()}
                 className="ml-auto h-10 min-w-[150px] justify-center px-5 rounded-xl bg-white text-black text-sm font-semibold flex items-center gap-2 disabled:opacity-40 transition"
               >

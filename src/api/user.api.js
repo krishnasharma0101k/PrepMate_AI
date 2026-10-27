@@ -19,6 +19,8 @@ export const useCoins = async (data) => {
     return response.data
     
   } catch (error) {
-    return null
+    console.log(error);
+   
+    throw error
   }
 }

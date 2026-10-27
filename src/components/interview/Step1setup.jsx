@@ -35,15 +35,21 @@ function Step1setup({ user, setUser }) {
     try {
       setUploading(true);
 
-      const coinsResponse = await useCoins({
-        coins: 10,
-        action: "resume-scorer",
-      });
+      try {
+        const coinsResponse = await useCoins({
+          coins: 10,
+          action: "resume-scorer",
+        });
 
-      setUser((prev) => ({
-        ...prev,
-        interviewCoin: coinsResponse.interviewCoin,
-      }));
+        setUser((prev) => ({
+          ...prev,
+          interviewCoin: coinsResponse.interviewCoin,
+        }));
+      } catch (error) {
+        setUploading(false);
+        alert("Failed to use coins.");
+        return
+      }
 
       const formData = new FormData();
       formData.append("resume", file);
@@ -63,40 +69,51 @@ function Step1setup({ user, setUser }) {
   };
 
   const start = async () => {
-  try {
-    setStarting(true);
+    try {
+      setStarting(true);
 
-    const response = await startInterview({
-      type,
-      role,
-      useResume,
-      resume,
-    });
+      const response = await startInterview({
+        type,
+        role,
+        useResume,
+        resume,
+      });
 
+      if (response) {
+        try {
+          const coinResponse = await useCoins({
+            coins: 50,
+            action: "start-interview",
+          });
 
-    if (!response?.success || !response?.interviewId) {
-      console.error("Failed to start interview:", response);
+          setUser((prev) => ({
+            ...prev,
+            interviewCoin: coinResponse?.interviewCoin,
+          }));
+        } catch (error) {
+          setUploading(false);
+          alert("Failed to use coins.");
+          return
+        }
+      }
+
+      setStarting(false);
+      navigate(`/interview/${response.interviewId}`, {
+        state: {
+          interviewData: response,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Interview start failed:",
+        error.response?.status,
+        error.response?.data || error.message,
+      );
+
       alert("Failed to start interview. Please try again.");
-      return;
+    } finally {
+      setStarting(false);
     }
-
-    navigate(`/interview/${response.interviewId}`, {
-      state: {
-        interviewData: response,
-      },
-    });
-  } catch (error) {
-    console.error(
-      "Interview start failed:",
-      error.response?.status,
-      error.response?.data || error.message
-    );
-
-    alert("Failed to start interview. Please try again.");
-  } finally {
-    setStarting(false);
-  }
-
   };
 
   return (
