@@ -213,24 +213,71 @@ function Step2interview({ interviewData, user }) {
   }, [selectedVoice, introSpoken, user, interviewData.question.question]);
 
   useEffect(() => {
-    if (!selectedVoice || !introSpoken) return;
-    const speakQuestion = async () => {
-      await new Promise((r) => setTimeout(r, 900));
-      await speakText(interviewData.question.question);
-    };
-    speakQuestion();
-  }, [question]);
-
-  useEffect(() => {
     setQuestion(interviewData.question);
     setCurrentIndex(interviewData.currentQuestion);
     setTimeLeft(interviewData.question.timer || 60);
   }, [interviewData]);
 
   useEffect(() => {
+    if (!selectedVoice || !introSpoken) return;
+    const speakQuestion = async () => {
+      await new Promise((r) => setTimeout(r, 900));
+      await speakText(question.question);
+    };
+    speakQuestion();
+  }, [question]);
+
+  useEffect(() => {
     setTimeLeft(question.timer || 60);
     setTimerActive(true);
   }, [question]);
+
+  useEffect(() => {
+    if (timeLeft !== 0)return;
+    const autoSubmit = async () => {
+      await speakText("Time is up. Submiting your answer now");
+      const finalAnswer = answer.trim() || "No answer provided. Time over.";
+
+      setLoading(true);
+
+      const res = await submitAnswer({
+        interviewId: interviewData.interviewId,
+        answer:finalAnswer,
+      });
+
+      if (res.completed) {
+        setFeedback(res.feedback);
+
+        await new Promise((r) => setTimeout(r, 700));
+
+        await speakText(
+          res.feedback?.feedback ||
+            "Great job! Your interview is complete. Preparing your report now.",
+        );
+
+        setLoading(false);
+
+        navigate(`/interview/${interviewData.interviewId}/report`);
+
+        return;
+      }
+
+      setFeedback(res.feedback);
+      await new Promise((r) => setTimeout(r, 700));
+      await speakText(
+        res.feedback?.feedback ||
+          "Noted your anwser. Let's move to the next question.",
+      );
+
+      setLoading(false);
+      setQuestion(res.question);
+      setCurrentIndex(res.currentQuestion);
+      setAnswer("");
+      setFeedback(null);
+    };
+
+    autoSubmit()
+  }, [timeLeft]);
 
   const submit = async () => {
     if (!answer.trim()) return;

@@ -1,11 +1,131 @@
-import React from 'react'
+import React, { useRef } from "react";
+import { FiArrowLeft, FiAward, FiCheck, FiTarget, FiTrendingUp } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
+import DownloadBtn from "../resume/DownloadBtn";
 
-function Step3report({report, user, seUser}) {
+function Step3report({ report, user, setUser }) {
+  const navigate = useNavigate();
+  const reportRef = useRef();
+
   return (
-    <div>
-      
+    <div className="min-h-screen bg-white flex items-center justify-center md:p-5">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-5xl rounded-3xl bg-gray-50 border border-gray-200 overflow-hidden"
+      >
+        <div className="border-b border-gray-200 px-8 py-6 flex items-center justify-between">
+          <div>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="inline-flex items-center gap-2 rounded-full border border-black/20 bg-black px-3 py-1.5 text-white cursor-pointer"
+            >
+              <FiArrowLeft size={14} />
+              <span className="text-xs text-zinc-100">Back</span>
+            </button>
+
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+              Interview Report
+            </h1>
+            <p className="text-sm text-gray-500">
+              Ai Generated Performance Analysis
+            </p>
+
+            <DownloadBtn docRef={reportRef} user={user} setUser={setUser} />
+          </div>
+
+          <div className="hidden md:flex items-center gap-2.5 rounded-2xl border border-black/34 bg-black px-4 py-2.5">
+            <FiAward className="text-yellow-400" size={16} />
+            <span className="text-sm text-white">Completed</span>
+          </div>
+        </div>
+        <div className="p-8" ref={reportRef}>
+          <div className="grid md:grid-cols-3 gap-5">
+            <div className="rounded-2xl bg-[#17181E] border border-white/10 p-6">
+              <div className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center">
+                <FiTarget size={18} />
+              </div>
+
+              <p className="mt-5 text-zinc-500 text-xs">Overall Score</p>
+              <h2 className="mt-2 text-4xl font-bold text-white">
+                {report.overallScore}
+
+                <span className="text-lg text-zinc-500">/100</span>
+              </h2>
+            </div>
+
+            <div className="rounded-2xl bg-[#17181E] border border-white/10 p-6">
+              <div className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center">
+                <FiTrendingUp size={18} />
+              </div>
+
+              <p className="mt-5 text-zinc-500 text-xs">Questions</p>
+
+              <h2 className="mt-2 text-4xl font-bold text-white">
+                {report.questions.length}
+              </h2>
+            </div>
+
+            <div className="rounded-2xl bg-[#17181E] border border-white/10 p-6">
+              <div className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center">
+                <FiAward size={18} />
+              </div>
+
+              <p className="mt-5 text-zinc-500 text-xs">Status</p>
+
+              <h2 className="mt-2 text-4xl font-bold text-white">Completed</h2>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-2xl bg-[#17181E] border border-white/10 p-6">
+            <h3 className="text-lg font-semibold text-white">
+              Interview Summary
+            </h3>
+
+            <p className="mt-3 text-sm leading-7 text-zinc-400">
+              {report.summary}
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5 mt-6">
+            <div className="rounded-2xl bg-[#17181E] border border-green-500/20 p-6">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-green-500 flex items-center justify-center">
+                  <FiTrendingUp className="text-white" size={16} />
+                </div>
+                <h2 className="text-lg font-semibold text-white">Strengths</h2>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {report.strengths?.length > 0 ? (
+                  report.strengths?.map((s) => (
+                    <div
+                      key={s}
+                      className="flex items-start gap-3 rounded-xl bg-green-500/5 border border-green-500/10 p-3.5"
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs"
+                      >
+                        <FiCheck size={16} />
+                      </div>
+                      <p className="text-sm text-zinc-300 leading-6">{s}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-zinc-500 text-sm">
+                    No strengths available.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div></div>
+          </div>
+        </div>
+      </motion.div>
     </div>
-  )
+  );
 }
 
-export default Step3report
+export default Step3report;
