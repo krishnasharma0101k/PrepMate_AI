@@ -259,7 +259,7 @@ function Step3report({ report, user, setUser }) {
                             key={i}
                             className="rounded-lg border border-white/10 bg-white/[0.03] p-3.5"
                           >
-                            <p className="text-sm text-zinc-300"> ! {item}</p>
+                            <p className="text-sm text-zinc-300"> • {item}</p>
                           </div>
                         ))}
                       </div>
