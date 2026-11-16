@@ -1,14 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/axios";
 import Sidebar from "../components/Sidebar";
 import { motion } from "motion/react";
 import { FiSidebar } from "react-icons/fi";
+import { getAllInterviews } from "../api/interview.api";
+import StatBox from "../components/StatBox";
+import InterviewGraph from "../components/InterviewGraph";
 
 function Dashboard({ user, setUser }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [stats, setStats] = useState({
+    totalInterviews: 0,
+    totalQuestions: 0,
+    completed: 0,
+    averageScore: 0,
+  });
+  const [technicalData, setTechnicalData] = useState([]);
+
+  const [hrData, setHrData] = useState([]);
+
+  const [technicalCount, setTechnicalCount] = useState(0);
+
+  const [hrCount, setHrCount] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      const responce = await getAllInterviews();
+      setStats(responce.stats);
+      setTechnicalData(responce.technicalData);
+      setHrData(responce.hrData);
+      setTechnicalCount(responce.technicalCount);
+      setHrCount(responce.hrCount);
+    };
+
+    fetchInterviews();
+  }, []);
 
   const handelLogout = async () => {
     try {
@@ -25,45 +54,102 @@ function Dashboard({ user, setUser }) {
 
   return (
     <div className="bg-white min-h-screen text-[#0A0A0A] font-sans flex">
-     <Sidebar
-  user={user}
-  onNweInterview={() => navigate("/interview")}
-  onLogout={handelLogout}
-  SidebarOpen={sidebarOpen}
-  setSidebarOpen={setSidebarOpen}
-  mobileOpen={mobileOpen}
-  setMobileOpen={setMobileOpen}
-/>
+      <Sidebar
+        user={user}
+        onNweInterview={() => navigate("/interview")}
+        onLogout={handelLogout}
+        SidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
 
-      <motion.main className={`flex-1 min-h-screen px-3 sm:px-4 md:px-6 py-4 md:py-6 transition-all duration-300 ${sidebarOpen ? "md:ml-[260px]" : "md:ml-[72px]"} `}>
-
+      <motion.main
+        className={`flex-1 min-h-screen px-3 sm:px-4 md:px-6 py-4 md:py-6 transition-all duration-300 ${sidebarOpen ? "md:ml-[260px]" : "md:ml-[72px]"} `}
+      >
         {/* top Area */}
 
         <div className="flex items-center justify-between mb-5 md:mb-6">
           <div className="flex items-center gap-2.5">
-            <motion.button 
-            whileHover = {{scale: 1.1}}
-            whileTap = {{scale: 0.95}}
-            onClick = {() => setMobileOpen(true)}
-            className="md:hidden text-black/40 hover:text-[#0A0A0A] transition-colors">
-            <FiSidebar size={17}/>
-
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden text-black/40 hover:text-[#0A0A0A] transition-colors"
+            >
+              <FiSidebar size={17} />
             </motion.button>
 
-            <motion.div 
-            initial = {{ opacity: 0, y: -12 }}
-            animate = {{ opacity: 1, y: 0 }}
-            transition = {{ duration: 0.4 }}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
             >
-              <p className='text-black/40 text-[11px] md:text-xs font-medium mb-0.5'>Overview</p>
-              <h2 className='text-lg md:text-xl font-bold text-[#0A0A0A]'>Hello, {user?.name?.split(" ")[0]} 👋</h2>
-
+              <p className="text-black/40 text-[11px] md:text-xs font-medium mb-0.5">
+                Overview
+              </p>
+              <h2 className="text-lg md:text-xl font-bold text-[#0A0A0A]">
+                Hello, {user?.name?.split(" ")[0]} 👋
+              </h2>
             </motion.div>
-
           </div>
-
         </div>
 
+        <div className="h-px bg-black/8 mb-5 md:mb-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 md:gap-3">
+          <StatBox
+            label="Total Interviews"
+            value={stats?.totalInterviews}
+            subHighlight="All Time"
+            sub="Interviews Created"
+            index={0}
+          />
+          <StatBox
+            label="Questions Solved"
+            value={stats?.totalQuestions}
+            subHighlight="Answered"
+            sub="Across All Interviews"
+            index={1}
+          />
+          <StatBox
+            label="Completed"
+            value={stats?.completed}
+            subHighlight={`${stats?.totalInterviews || 0} Total`}
+            sub="Interviews Finished"
+            index={2}
+          />
+          <StatBox
+            label="Average Score"
+            value={`${Math.round(stats?.averageScore || 0)}/100`}
+            subHighlight="Completed Only"
+            sub="Average Perfomance"
+            index={3}
+          />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="mb-3 md:mb-4"
+        >
+          <p className="text-black/40 text-[10px] font-semibold uppercase tracking-widest mt-2.5 mb-1">
+            Performance
+          </p>
+
+          <h3 className="text-[#0A0A0A] font-bold text-sm md:text-base mb-3 md:mb-4">
+            Interview History
+          </h3>
+        </motion.div>
+
+        <div className="w-full overflow-x-auto">
+          <InterviewGraph
+            technicalData={technicalData}
+            technicalCount={technicalCount}
+            hrData={hrData}
+            hrCount={hrCount}
+          />
+        </div>
       </motion.main>
     </div>
   );
