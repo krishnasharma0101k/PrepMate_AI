@@ -142,14 +142,14 @@ function Dashboard({ user, setUser }) {
           </h3>
         </motion.div>
 
-        <div className="w-full overflow-x-auto">
+        
           <InterviewGraph
             technicalData={technicalData}
             technicalCount={technicalCount}
             hrData={hrData}
             hrCount={hrCount}
           />
-        </div>
+        
       </motion.main>
     </div>
   );

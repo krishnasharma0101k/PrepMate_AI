@@ -68,6 +68,6 @@ function LoginModel({onClose, setUser}) {
 
     </div>
   )
-}
+} 
 
 export default LoginModel

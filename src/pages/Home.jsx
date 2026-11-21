@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { motion } from 'motion/react'
 import { GiArtificialHive } from "react-icons/gi";
 import { FaArrowRight } from "react-icons/fa";

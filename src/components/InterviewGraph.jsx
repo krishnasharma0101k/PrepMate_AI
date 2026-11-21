@@ -9,6 +9,16 @@ import {
   Tooltip,
 } from "recharts";
 
+function CustomTooltip({ active, payload }) {
+  if (active && payload.length) {
+    return (
+      <div className="bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-lg p-2.5 flex items-center gap-2.5 text-white shadow-2xl">
+        <p className="text-white/40 mb-0.5">{payload[0]?.payload?.skill}</p>
+        <p className="font-bold text-white">{payload[0]?.value}</p>
+      </div>
+    );
+  }
+}
 function RadarCard({ title, data, color, index }) {
   return (
     <motion.div
@@ -43,7 +53,7 @@ function RadarCard({ title, data, color, index }) {
               strokeWidth={2}
               dot={{ r: 2.5, fill: color, strokeWidth: 0 }}
             />
-            <Tooltip />
+            <Tooltip content={<CustomTooltip/>}/>
           </RadarChart>
         </ResponsiveContainer>
 
